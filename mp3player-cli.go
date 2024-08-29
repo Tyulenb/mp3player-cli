@@ -372,11 +372,14 @@ func playPlaylist(c *cli.Context) error {
 		for stat.Loop || firstPlay {
 			firstPlay = false
 			step = playMp3(songs[i], answChan, &stat)
-		}
-		if step == 0 || i < 0 {
-			return nil
+			if step == 0 {
+				return nil
+			}
 		}
 		i += step
+		if i < 0 {
+			break
+		}
 	}
 
 	return nil
@@ -416,12 +419,10 @@ func playMp3(path string, answChan chan int, stat *Status) int {
 	f, err := os.Open(path) // Open the music file.
 	if err != nil {
 		log.Fatal(err)
-		return 0
 	}
 	streamer, format, err := mp3.Decode(f)
 	if err != nil {
 		log.Fatal(err)
-		return 0
 	}
 	defer streamer.Close()
 	if !stat.Inited { // Speaker should be inited only once.
